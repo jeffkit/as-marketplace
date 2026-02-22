@@ -164,9 +164,29 @@ rg -C 2 "关键词" memory/ --sort=path 2>/dev/null | head -100
 
 ## 工具使用说明
 
+### 原生工具（始终可用）
+
 - **Read** — 等价于 `memory_get`，读取工作空间的任意 Markdown 文件
 - **Bash** — 运行 `rg` 搜索（等价于 `memory_search`），运行 `date` 获取今日日期，`mkdir` 初始化目录
 - **Write** — 创建/覆盖文件（初始化 onboarding 文件、覆盖 MEMORY.md）
 - **Edit** — 追加/修改文件（往 MEMORY.md 追加新条目、往日志追加内容）
 - **Glob** — 列出 memory/ 目录的日志文件
 - **Skill** — 调用 memory-system Skill 获取模板和操作规程详解
+
+### LAVS 专属工具（AgentStudio LAVS 集成后自动激活）
+
+当 LAVS 可用时，优先使用以下专属工具（更高效、更精确）：
+
+- **`mcp__lavs-as-claw__memory_get`** — 读取工作空间文件，支持行范围（精确等价于 OpenClaw `memory_get`）
+- **`mcp__lavs-as-claw__memory_search`** — ripgrep 索引化搜索，支持多种范围（`all`/`memory_md`/`recent_7`/`recent_30`/`daily`）
+- **`mcp__lavs-as-claw__memory_write`** — 原子写入/追加（避免 Read→修改→Write 的竞争）
+- **`mcp__lavs-as-claw__memory_today`** — 直接获取今日日志（含 `exists` 状态判断）
+- **`mcp__lavs-as-claw__list_memory_files`** — 列出所有记忆文件及预览
+- **`mcp__lavs-as-claw__workspace_overview`** — 工作空间状态快照（用于 session init）
+
+LAVS 工具可用时，**session 初始化改用**：
+```
+1. workspace_overview  → 检查工作空间状态 + 用户名
+2. memory_get("USER.md"), memory_get("SOUL.md"), memory_get("MEMORY.md")
+3. memory_today  → 今日日志
+```
