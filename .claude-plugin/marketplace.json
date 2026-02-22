@@ -1,0 +1,43 @@
+{
+  "name": "agentstudio-marketplace",
+  "version": "1.0.0",
+  "description": "AgentStudio 官方插件市场，包含系统核心 Agent 和 Skills，默认随 AgentStudio 安装。",
+  "author": {
+    "name": "AgentStudio Team"
+  },
+  "plugins": [],
+  "agents": [
+    {
+      "name": "meta-agent",
+      "path": "agents/meta-agent.md",
+      "description": "系统配置助手 & 业务路由器"
+    }
+  ],
+  "skills": [
+    {
+      "name": "agent-designer",
+      "path": "skills/agent-designer",
+      "description": "Agent 设计引导"
+    },
+    {
+      "name": "command-designer",
+      "path": "skills/command-designer",
+      "description": "Command 设计引导"
+    },
+    {
+      "name": "mcp-configurator",
+      "path": "skills/mcp-configurator",
+      "description": "MCP Server 配置引导"
+    },
+    {
+      "name": "mcp-developer",
+      "path": "skills/mcp-developer",
+      "description": "MCP Server 开发指南（从零创建 MCP 服务）"
+    },
+    {
+      "name": "task-router",
+      "path": "skills/task-router",
+      "description": "业务任务路由"
+    }
+  ]
+}

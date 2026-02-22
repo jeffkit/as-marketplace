@@ -1,0 +1,13 @@
+{
+  "name": "as-marketplace",
+  "version": "1.0.0",
+  "description": "AgentStudio 官方插件市场 - 系统核心 Agent 和 Skills",
+  "private": true,
+  "scripts": {
+    "start": "echo 'Marketplace repository - no start command needed'",
+    "pause": "echo 'Marketplace repository - no pause command needed'",
+    "stop": "echo 'Marketplace repository - no stop command needed'"
+  },
+  "keywords": ["agentstudio", "marketplace", "agents", "skills"],
+  "license": "MIT"
+}
