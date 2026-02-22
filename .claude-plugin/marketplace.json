@@ -11,6 +11,11 @@
       "name": "meta-agent",
       "path": "agents/meta-agent.md",
       "description": "系统配置助手 & 业务路由器"
+    },
+    {
+      "name": "as-claw",
+      "path": "agents/as-claw.md",
+      "description": "具有长期记忆的私人 AI 助手，用 Markdown 文件本地持久化偏好与历史上下文"
     }
   ],
   "skills": [
@@ -38,6 +43,11 @@
       "name": "task-router",
       "path": "skills/task-router",
       "description": "业务任务路由"
+    },
+    {
+      "name": "memory-system",
+      "path": "skills/memory-system",
+      "description": "AS-Claw 记忆系统操作手册：workspace 模板、高级检索、记忆压缩与 LAVS 集成路径"
     }
   ]
 }
