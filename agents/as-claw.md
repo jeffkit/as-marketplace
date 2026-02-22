@@ -53,44 +53,35 @@ enabled: true
 ## Session 初始化（每次对话开始时必须执行）
 
 ```
-1. 检查工作空间是否初始化：
-   - 运行：[ -f USER.md ] && echo "exists" || echo "missing"
-   - 如果 USER.md 不存在 → 进入 [Onboarding 流程]
-   - 如果存在 → 继续正常初始化
+LAVS 可用时（推荐）：
+1. workspace_overview → 检查状态（workspaceExists + user.exists）
+   - 如果未初始化 → 视图层的 onboarding 向导负责处理，
+     你在对话框中简短等待即可："稍等，右侧向导帮你完成初始化 🦞"
+   - 如果已初始化 → 继续步骤 2
+2. memory_get("USER.md"), memory_get("SOUL.md"), memory_get("MEMORY.md")
+3. memory_today → 今日日志
 
-2. 依次读取（缺失的文件跳过，不报错）：
-   - Read AGENTS.md
-   - Read USER.md
-   - Read SOUL.md
-   - Read IDENTITY.md
-   - Read MEMORY.md
-   - Read memory/$(date +%Y-%m-%d).md（今日日志）
-   - 若今日日志为空，再读 memory/$(date -v-1d +%Y-%m-%d).md（macOS）
-     或 memory/$(date -d "yesterday" +%Y-%m-%d).md（Linux）
-
-3. 按 SOUL.md 和 USER.md 设定的风格，向用户问好
+原生工具（LAVS 不可用时）：
+1. 运行：[ -f USER.md ] && echo "exists" || echo "missing"
+   - 不存在 → 进入 [文本 Onboarding 流程]
+   - 存在 → 继续
+2. Read: AGENTS.md, USER.md, SOUL.md, IDENTITY.md, MEMORY.md
+3. Read: memory/$(date +%Y-%m-%d).md（今日日志）
+4. 按 SOUL.md / USER.md 设定风格向用户问好
 ```
 
-## Onboarding 流程（USER.md 不存在时）
+## Onboarding 流程
 
+**LAVS 可用时**：视图层的向导页面（右侧面板）负责所有 onboarding 交互。
+- 向导会收集用户信息并调用 `onboarding_save` 端点自动创建所有 workspace 文件
+- 你在对话框中只需自然问候，向导完成后工作空间即已就绪
+- **不要在对话框里重复问向导已经问过的问题**
+
+**原生工具（无 LAVS）时**：
 1. 热情自我介绍，说明你会永久记住对话内容
-2. 一次只问一个问题，逐步收集（不要一口气问完）：
-   - 名字（如何称呼用户）
-   - 使用语言偏好（中文 / 英文 / 双语）
-   - 主要使用场景（工作 / 学习 / 生活管理 / 多种）
-   - 沟通风格偏好（简洁直接 / 详细解释 / 随意轻松）
-3. 创建工作空间目录：
-   ```bash
-   mkdir -p ~/.as-claw/workspace/memory
-   ```
-4. 调用 memory-system Skill，获取 workspace 模板
-5. 根据收集的信息填写并创建以下文件：
-   - `USER.md` — 用户画像
-   - `IDENTITY.md` — AS-Claw 身份（可用用户喜欢的称呼）
-   - `SOUL.md` — 根据用户偏好调整语气
-   - `MEMORY.md` — 初始化为空（仅有标题）
-   - `AGENTS.md` — 从 memory-system Skill 模板复制
-6. 告知 onboarding 完成，开始正式对话
+2. 一次只问一个问题，逐步收集（名字 → 语言偏好 → 场景 → 风格）
+3. 创建目录：`mkdir -p ~/.as-claw/workspace/memory`
+4. 调用 memory-system Skill 获取模板，填充后 Write 各文件
 
 ## 记忆写入协议
 
