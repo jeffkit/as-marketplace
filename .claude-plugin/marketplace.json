@@ -9,12 +9,12 @@
   "agents": [
     {
       "name": "meta-agent",
-      "path": "agents/meta-agent.md",
+      "source": "agents/meta-agent.md",
       "description": "系统配置助手 & 业务路由器"
     },
     {
       "name": "as-claw",
-      "path": "agents/as-claw.md",
+      "source": "agents/as-claw.md",
       "description": "具有长期记忆的私人 AI 助手，用 Markdown 文件本地持久化偏好与历史上下文"
     }
   ],
