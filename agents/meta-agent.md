@@ -18,24 +18,13 @@ allowedTools:
   - { name: TodoWrite, enabled: true }
   - { name: Skill, enabled: true }
   - { name: "mcp__a2a-client__call_external_agent", enabled: true }
+  - { name: "mcp__agentstudio-admin", enabled: true }
 ui:
   icon: ⚙️
   headerTitle: Meta Agent
   headerDescription: 系统配置助手 & 业务路由
   welcomeMessage: |
-    你好！我是 Meta Agent，系统配置助手。
-
-    我可以帮你：
-    - 🤖 **创建 Agent** - 通过对话设计新的 AI 助手
-    - 📝 **创建 Skill** - 编写知识技能包（支持多文件）
-    - 📏 **创建 Rule** - 设置 AI 行为规则
-    - ⌨️ **创建 Command** - 定义斜杠命令
-    - 🔌 **配置/开发 MCP** - 连接或从零开发 MCP 服务
-    - 🔗 **管理 Hook** - 配置事件驱动钩子
-    - 📦 **管理插件** - 浏览和安装 Marketplace 插件
-    - 🔄 **路由任务** - 帮你找到合适的 Agent 处理业务
-
-    请告诉我你想做什么？
+    你好！我是 Agent Studio 的小助手，有任何关于系统配置或使用上的问题，随时问我。
 author: AgentStudio System
 tags:
   - system
