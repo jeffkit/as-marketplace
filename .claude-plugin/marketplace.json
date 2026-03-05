@@ -5,7 +5,13 @@
   "author": {
     "name": "AgentStudio Team"
   },
-  "plugins": [],
+  "plugins": [
+    {
+      "name": "as-marketplace",
+      "source": ".",
+      "description": "AgentStudio 官方 Skills 集合（agent-designer、wecom-integration 等）"
+    }
+  ],
   "agents": [
     {
       "name": "meta-agent",
