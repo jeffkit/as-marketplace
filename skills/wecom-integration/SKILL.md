@@ -39,19 +39,31 @@ AgentStudio A2A 端点 → Agent 处理 → 回复用户
 
 ## 执行流程
 
-### 第一步：初始化连接配置（首次使用时执行）
+### 第一步：检查并初始化连接配置
 
-调用内置工具配置 as-dispatch 服务器地址和鉴权 Token（只需配置一次，后续自动使用）：
+**先调工具查，不要问用户：**
 
+```
+mcp__agentstudio-admin__get_tunnel_status
+```
+
+根据返回结果判断：
+
+| 情况 | 处理 |
+|------|------|
+| `server_url` 已配置 且 `enterprise_token_configured: true` | ✅ 直接进入第二步，无需任何配置 |
+| `server_url` 已配置 但 `enterprise_token_configured: false` | 告知用户需要提供 as-enterprise Token，然后调用 `configure_tunnel` 补全 |
+| `server_url` 未配置（空） | 告知用户需要完成初始化，引导提供 Token |
+
+**需要 Token 时才问用户：**
+> 需要你的 as-enterprise Token 来对接企微服务。请登录 `https://agentstudio.woa.com/as/`，在用户设置 → API Token 处获取，粘贴给我即可。
+
+获取 Token 后调用：
 ```
 mcp__agentstudio-admin__configure_tunnel
   server_url:        https://agentstudio.woa.com
-  enterprise_token:  <用户的 as-enterprise JWT Token>
+  enterprise_token:  <用户提供的 Token>
 ```
-
-> **如何获取 enterprise_token**：登录 `https://agentstudio.woa.com/as/` → 用户设置 → API Token，或调用 `mcp__agentstudio-admin__get_enterprise_token`（如有）获取当前 Token。
->
-> 如果用户之前已通过 AgentStudio 设置页配置过隧道，则可跳过此步骤。
 
 ### 第二步：确认目标项目
 
@@ -71,14 +83,14 @@ mcp__agentstudio-admin__get_a2a_endpoint
 - `a2aEndpoint`：完整 A2A URL（优先隧道 URL，否则本机 IP）
 - `accessMode`：`tunnel` 或 `local`
 
-> ⚠️ **若 `accessMode=local`**：as-dispatch 无法访问到本机服务，需要先创建隧道：
+> ⚠️ **若 `accessMode=local`**：as-dispatch 无法访问到本机服务，需要先创建并连接隧道。**直接执行，不用问用户**：
 >
 > ```
 > mcp__agentstudio-admin__create_tunnel
->   name: <项目名>  （如 my-project）
+>   name: <项目名的小写连字符形式，如 my-project>
 > ```
 >
-> 隧道创建后，重新调用 `get_a2a_endpoint` 获取隧道 URL。
+> 创建成功后会返回 `tunnel_token`，告知用户保存好（后续本地启动 tunely 客户端需要用）。然后重新调用 `get_a2a_endpoint` 获取隧道 URL。
 
 ### 第四步：创建 A2A API Key（自动）
 
