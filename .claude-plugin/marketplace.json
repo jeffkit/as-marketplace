@@ -48,6 +48,11 @@
       "name": "memory-system",
       "path": "skills/memory-system",
       "description": "AS-Claw 记忆系统操作手册：workspace 模板、高级检索、记忆压缩与 LAVS 集成路径"
+    },
+    {
+      "name": "lavs-agent-dev",
+      "path": "skills/lavs-agent-dev",
+      "description": "LAVS Agent 开发指南：创建带可视化 UI + 数据存储的完整 Agent，涵盖 lavs.json 清单、脚本 handler、view 组件模板"
     }
   ]
 }
