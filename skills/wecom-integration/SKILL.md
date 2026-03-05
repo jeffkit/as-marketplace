@@ -143,7 +143,7 @@ mcp__agentstudio-admin__create_wecom_bot
 
 ```bash
 TOKEN=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 32)
-AESKEY=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9+/' | head -c 43)
+AESKEY=$(openssl rand -base64 48 | tr -dc 'A-Za-z0-9' | head -c 43)
 echo "Token: $TOKEN"
 echo "AES Key: $AESKEY"
 ```
