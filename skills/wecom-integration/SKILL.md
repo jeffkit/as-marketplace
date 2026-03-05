@@ -67,9 +67,20 @@ mcp__agentstudio-admin__configure_tunnel
 
 ### 第二步：确认目标项目
 
-问：**"你想把哪个项目的 Agent 接入企微？"**
+**先判断用户意图，再决定如何获取项目路径：**
 
-调用 `mcp__agentstudio-admin__list_projects` 列出所有项目，让用户确认。
+| 用户表达 | 项目路径来源 |
+|---------|------------|
+| "把当前这个 Agent 接入" / "把你自己接入" / "把这个 Agent 接入" | 使用当前工作目录（`cwd`），即 Agent 启动时所在的目录 |
+| 明确说了项目名或路径 | 直接使用，或调用 `list_projects` 匹配 |
+| 未指明 | 调用 `list_projects` 列出所有项目让用户选择 |
+
+> **Claude Code 说明**：在 Claude Code 中，**项目目录 = 工作目录**。Agent 的 `workingDirectory`（即 `cwd`）就是当前项目的根目录。如果用户要接入的是"当前 Agent 自己"，直接用 `cwd` 作为 `project_path`，不要调用 `list_projects`。
+
+获取当前工作目录（如需确认）：
+```
+Bash: pwd
+```
 
 ### 第三步：获取 A2A 端点（自动）
 
