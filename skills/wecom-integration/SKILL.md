@@ -100,12 +100,12 @@ AgentStudio A2A 端点 → Agent 处理 → 回复用户
 如果 1.2 中 tunnel 已就绪，直接使用，`DISPATCH_CALLBACK_URL = http://agentstudio.woa.com/callback`。
 
 如果 tunnel 未就绪（token 未配置），引导用户提供 Token：
-> 需要你的 as-enterprise Token 来对接企微服务。请登录 `https://agentstudio.woa.com/as/`，在用户设置 → API Token 处获取，粘贴给我即可。
+> 需要你的 as-enterprise Token 来对接企微服务。请登录 `https://tas.woa.com/`，在用户设置 → API Token 处获取，粘贴给我即可。
 
 获取 Token 后调用：
 ```
 mcp__agentstudio-admin__configure_tunnel
-  server_url:        https://agentstudio.woa.com
+  server_url:        http://agentstudio.woa.com
   enterprise_token:  <用户提供的 Token>
 ```
 
