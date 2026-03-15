@@ -20,7 +20,6 @@ AgentStudio 平台的官方第一方插件市场，包含系统核心 Agent 和 
 | **mcp-configurator** | MCP Server 连接配置引导 |
 | **mcp-developer** | 从零开发 MCP Server 的完整指南（TypeScript / Python） |
 | **task-router** | 业务任务智能路由到合适的 Agent |
-| **memory-system** | AS-Claw 记忆系统操作手册：workspace 模板、高级检索、记忆压缩 |
 
 ## 工作原理
 
@@ -44,23 +43,14 @@ as-marketplace/
 │   ├── command-designer/         # Command 设计技能包
 │   ├── mcp-configurator/         # MCP 配置技能包
 │   ├── mcp-developer/            # MCP 开发技能包
-│   ├── task-router/              # 任务路由技能包
-│   └── memory-system/            # AS-Claw 记忆系统技能包
-│       ├── SKILL.md
-│       └── reference/
-│           └── workspace-templates/   # Workspace 引导文件模板
-│               ├── AGENTS.md
-│               ├── SOUL.md
-│               ├── USER.md
-│               ├── IDENTITY.md
-│               └── MEMORY.md
+│   └── task-router/              # 任务路由技能包
 ├── package.json
 └── README.md
 ```
 
 ## AS-Claw 记忆系统
 
-AS-Claw 是 [OpenClaw](https://openclaw.ai) 记忆机制的 AgentStudio 复刻版。
+AS-Claw 是 [OpenClaw](https://openclaw.ai) 记忆机制的 AgentStudio 复刻版。记忆系统的完整操作规程（workspace 模板、检索策略、压缩规程、故障排查）已内联在 `agents/as-claw.md` 的系统提示词中，无需独立 Skill。
 
 **记忆存储**：`~/.as-claw/workspace/`（Markdown 文件，可 git 备份）
 
