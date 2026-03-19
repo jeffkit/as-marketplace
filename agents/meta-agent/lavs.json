@@ -1,0 +1,294 @@
+{
+  "lavs": "1.0",
+  "name": "meta-agent-tasks",
+  "version": "1.0.0",
+  "description": "Meta Agent 任务流转系统 - JSONL 格式的结构化任务队列管理",
+
+  "endpoints": [
+    {
+      "id": "listTasks",
+      "method": "query",
+      "description": "列出任务（支持按 status/priority 过滤）",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/task-service.cjs", "list"],
+        "input": "stdin",
+        "timeout": 5000
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "status": { "type": "string", "description": "按状态过滤: pending/in_progress/delegated/waiting_human/blocked/done/cancelled" },
+            "priority": { "type": "string", "description": "按优先级过滤: urgent/high/normal/low" },
+            "includeArchive": { "type": "boolean", "description": "是否包含归档任务" }
+          }
+        },
+        "output": {
+          "type": "array",
+          "items": { "$ref": "#/types/TaskItem" }
+        }
+      }
+    },
+    {
+      "id": "submitTask",
+      "method": "mutation",
+      "description": "提交新任务到队列",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/task-service.cjs", "submit"],
+        "input": "stdin",
+        "timeout": 5000
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "description": "任务标题" },
+            "description": { "type": "string", "description": "详细描述" },
+            "priority": { "type": "string", "enum": ["urgent", "high", "normal", "low"] },
+            "startAt": { "type": "string", "description": "计划开始时间 (ISO 8601)" },
+            "dueAt": { "type": "string", "description": "截止时间 (ISO 8601)" },
+            "tags": { "type": "array", "items": { "type": "string" } },
+            "sourceType": { "type": "string", "enum": ["user", "agent", "system", "scheduler"] },
+            "sourceName": { "type": "string", "description": "来源名称" },
+            "context": { "type": "object", "description": "附加上下文数据" }
+          },
+          "required": ["title"]
+        },
+        "output": { "$ref": "#/types/TaskItem" }
+      }
+    },
+    {
+      "id": "getTask",
+      "method": "query",
+      "description": "根据 ID 获取任务详情",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/task-service.cjs", "get"],
+        "input": "stdin",
+        "timeout": 5000
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "description": "任务 ID (tq_ 前缀)" }
+          },
+          "required": ["id"]
+        },
+        "output": { "$ref": "#/types/TaskItem" }
+      }
+    },
+    {
+      "id": "updateTask",
+      "method": "mutation",
+      "description": "更新任务字段（状态变为 done 时自动设置 completedAt）",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/task-service.cjs", "update"],
+        "input": "stdin",
+        "timeout": 5000
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "description": "任务 ID" },
+            "updates": {
+              "type": "object",
+              "description": "要更新的字段",
+              "properties": {
+                "status": { "type": "string" },
+                "progress": { "type": "number" },
+                "result": { "type": "string" },
+                "blockedReason": { "type": "string" },
+                "title": { "type": "string" },
+                "description": { "type": "string" },
+                "priority": { "type": "string" },
+                "dueAt": { "type": "string" },
+                "tags": { "type": "array", "items": { "type": "string" } },
+                "delegatedTo": { "type": "object" }
+              }
+            },
+            "progressLog": { "type": "string", "description": "追加一条进度日志" }
+          },
+          "required": ["id"]
+        },
+        "output": { "$ref": "#/types/TaskItem" }
+      }
+    },
+    {
+      "id": "cancelTask",
+      "method": "mutation",
+      "description": "取消任务并记录原因",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/task-service.cjs", "cancel"],
+        "input": "stdin",
+        "timeout": 5000
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "description": "任务 ID" },
+            "reason": { "type": "string", "description": "取消原因" }
+          },
+          "required": ["id"]
+        },
+        "output": { "$ref": "#/types/TaskItem" }
+      }
+    },
+    {
+      "id": "archiveTasks",
+      "method": "mutation",
+      "description": "将 done/cancelled 任务移入归档文件",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/task-service.cjs", "archive"],
+        "input": "stdin",
+        "timeout": 5000
+      },
+      "schema": {
+        "input": { "type": "object", "properties": {} },
+        "output": {
+          "type": "object",
+          "properties": {
+            "archivedCount": { "type": "number" },
+            "remaining": { "type": "number" }
+          }
+        }
+      }
+    },
+    {
+      "id": "checkDue",
+      "method": "query",
+      "description": "检查过期和即将到期的任务",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/task-service.cjs", "check-due"],
+        "input": "stdin",
+        "timeout": 5000
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "minutes": { "type": "number", "description": "检查未来多少分钟内到期（默认 30）" }
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "overdue": { "type": "array", "items": { "$ref": "#/types/TaskItem" } },
+            "dueSoon": { "type": "array", "items": { "$ref": "#/types/TaskItem" } }
+          }
+        }
+      }
+    },
+    {
+      "id": "getStats",
+      "method": "query",
+      "description": "获取任务统计信息",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/task-service.cjs", "stats"],
+        "input": "stdin",
+        "timeout": 5000
+      },
+      "schema": {
+        "input": { "type": "object", "properties": {} },
+        "output": { "$ref": "#/types/TaskStats" }
+      }
+    }
+  ],
+
+  "types": {
+    "TaskItem": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "startAt": { "type": "string", "format": "date-time" },
+        "dueAt": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": "string", "format": "date-time" },
+        "source": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string", "enum": ["user", "agent", "system", "scheduler"] },
+            "id": { "type": "string" },
+            "name": { "type": "string" }
+          }
+        },
+        "assignee": {
+          "type": "object",
+          "properties": {
+            "agentId": { "type": "string" }
+          }
+        },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "delegated", "waiting_human", "blocked", "done", "cancelled"] },
+        "delegatedTo": {
+          "type": "object",
+          "properties": {
+            "agentId": { "type": "string" },
+            "agentName": { "type": "string" },
+            "delegatedAt": { "type": "string" },
+            "a2aTaskId": { "type": "string" }
+          }
+        },
+        "progress": { "type": "number" },
+        "progressLog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "timestamp": { "type": "string" },
+              "message": { "type": "string" },
+              "actor": { "type": "string" }
+            }
+          }
+        },
+        "result": { "type": "string" },
+        "blockedReason": { "type": "string" },
+        "priority": { "type": "string", "enum": ["urgent", "high", "normal", "low"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "relatedTaskIds": { "type": "array", "items": { "type": "string" } },
+        "context": { "type": "object" }
+      },
+      "required": ["id", "title", "status", "priority"]
+    },
+    "TaskStats": {
+      "type": "object",
+      "properties": {
+        "total": { "type": "number" },
+        "pending": { "type": "number" },
+        "in_progress": { "type": "number" },
+        "delegated": { "type": "number" },
+        "waiting_human": { "type": "number" },
+        "blocked": { "type": "number" },
+        "done": { "type": "number" },
+        "cancelled": { "type": "number" },
+        "overdue": { "type": "number" },
+        "urgent": { "type": "number" },
+        "archived_total": { "type": "number" }
+      }
+    }
+  },
+
+  "permissions": {
+    "fileAccess": ["./data/**/*.jsonl"],
+    "networkAccess": false,
+    "maxExecutionTime": 5000
+  }
+}
