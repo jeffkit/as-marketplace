@@ -15,7 +15,7 @@
   "agents": [
     {
       "name": "meta-agent",
-      "source": "agents/meta-agent.md",
+      "source": "agents/meta-agent/meta-agent.md",
       "description": "系统配置助手 & 业务路由器"
     },
     {
