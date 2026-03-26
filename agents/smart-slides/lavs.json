@@ -1,0 +1,552 @@
+{
+  "lavs": "1.0",
+  "name": "smart-slides",
+  "version": "1.0.0",
+  "description": "智能 PPT - AI 演讲稿生成与编辑服务",
+  "endpoints": [
+    {
+      "id": "getPresentation",
+      "method": "query",
+      "description": "获取当前演讲稿的完整数据",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "get"],
+        "input": "args"
+      },
+      "schema": {
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "listStyles",
+      "method": "query",
+      "description": "列出所有可用的幻灯片视觉风格",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "list-styles"],
+        "input": "args"
+      },
+      "schema": {
+        "output": {
+          "type": "array",
+          "items": { "$ref": "#/types/Style" }
+        }
+      }
+    },
+    {
+      "id": "getConfig",
+      "method": "query",
+      "description": "获取当前配置（API Key 状态、模型设置）",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "get-config"],
+        "input": "args"
+      },
+      "schema": {
+        "output": {
+          "type": "object",
+          "properties": {
+            "hasApiKey": { "type": "boolean" },
+            "textModel": { "type": "string" },
+            "imageModel": { "type": "string" }
+          }
+        }
+      }
+    },
+    {
+      "id": "setConfig",
+      "method": "mutation",
+      "description": "设置配置（Gemini API Key、模型等）",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "set-config"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "geminiApiKey": { "type": "string", "description": "Gemini API Key" },
+            "textModel": { "type": "string", "description": "文本生成模型名称" },
+            "imageModel": { "type": "string", "description": "图片生成模型名称" }
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "hasApiKey": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    {
+      "id": "createOutline",
+      "method": "mutation",
+      "description": "保存 Agent 自主生成的结构化大纲（不调用 Gemini API，Agent-first 默认路径）",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "create-outline"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["title", "slides"],
+          "properties": {
+            "title": { "type": "string", "description": "演讲稿标题" },
+            "topic": { "type": "string", "description": "原始主题（可选）" },
+            "styleId": { "type": "string", "description": "风格 ID（可选，默认 minimal-modern）" },
+            "sources": {
+              "type": "array",
+              "items": { "$ref": "#/types/Source" },
+              "description": "参考资料来源（可选）"
+            },
+            "slides": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["title"],
+                "properties": {
+                  "title": { "type": "string", "description": "页面标题" },
+                  "body": { "type": "array", "items": { "type": "string" }, "description": "要点列表" },
+                  "imageDescription": { "type": "string", "description": "视觉构想描述" },
+                  "layout": { "type": "string", "description": "布局类型" },
+                  "speakerNotes": { "type": "string", "description": "演讲备注" }
+                }
+              }
+            }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "updateOutline",
+      "method": "mutation",
+      "description": "用 Agent 自主优化后的大纲替换当前大纲（不调用 Gemini API）",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "update-outline"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "description": "新标题（可选）" },
+            "sources": {
+              "type": "array",
+              "items": { "$ref": "#/types/Source" },
+              "description": "新增参考资料（可选）"
+            },
+            "slides": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["title"],
+                "properties": {
+                  "title": { "type": "string", "description": "页面标题" },
+                  "body": { "type": "array", "items": { "type": "string" }, "description": "要点列表" },
+                  "imageDescription": { "type": "string", "description": "视觉构想描述" },
+                  "layout": { "type": "string", "description": "布局类型" },
+                  "speakerNotes": { "type": "string", "description": "演讲备注" }
+                }
+              }
+            }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "generateOutline",
+      "method": "mutation",
+      "description": "使用 Gemini API 联网调研并生成大纲（需要 Gemini API Key，仅在用户明确要求时使用）",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "generate-outline"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["topic"],
+          "properties": {
+            "topic": { "type": "string", "description": "演讲主题或需求描述" },
+            "slideCount": { "type": "string", "description": "目标页数，如 8-12" },
+            "styleId": { "type": "string", "description": "风格 ID" }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "refineOutline",
+      "method": "mutation",
+      "description": "根据用户指令优化已有大纲",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "refine-outline"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["instruction"],
+          "properties": {
+            "instruction": { "type": "string", "description": "优化指令" },
+            "slideCount": { "type": "string", "description": "目标页数" }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "updateSlide",
+      "method": "mutation",
+      "description": "更新指定幻灯片的内容",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "update-slide"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["index"],
+          "properties": {
+            "index": { "type": "number", "description": "幻灯片索引（0-based）" },
+            "title": { "type": "string" },
+            "body": { "type": "array", "items": { "type": "string" } },
+            "imageDescription": { "type": "string" },
+            "layout": { "type": "string" },
+            "speakerNotes": { "type": "string" }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "addSlide",
+      "method": "mutation",
+      "description": "在指定位置添加新幻灯片",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "add-slide"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "index": { "type": "number", "description": "插入位置（不指定则末尾追加）" },
+            "title": { "type": "string" },
+            "body": { "type": "array", "items": { "type": "string" } },
+            "imageDescription": { "type": "string" }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "deleteSlide",
+      "method": "mutation",
+      "description": "删除指定幻灯片",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "delete-slide"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["index"],
+          "properties": {
+            "index": { "type": "number", "description": "要删除的幻灯片索引" }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "moveSlide",
+      "method": "mutation",
+      "description": "移动幻灯片位置",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "move-slide"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["index", "direction"],
+          "properties": {
+            "index": { "type": "number" },
+            "direction": { "type": "number", "description": "-1 上移, 1 下移" }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "setStyle",
+      "method": "mutation",
+      "description": "设置幻灯片风格和分辨率",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "set-style"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "styleId": { "type": "string" },
+            "resolution": { "type": "string", "enum": ["2K", "4K"] }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "uploadReference",
+      "method": "mutation",
+      "description": "上传参考图片到视觉参考图库",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "upload-reference"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["imageData"],
+          "properties": {
+            "imageData": { "type": "string", "description": "Base64 data URL of the image" },
+            "name": { "type": "string", "description": "参考图片名称" }
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "imageData": { "type": "string" }
+          }
+        }
+      }
+    },
+    {
+      "id": "listReferences",
+      "method": "query",
+      "description": "列出视觉参考图库中所有参考图片",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "list-references"],
+        "input": "args"
+      },
+      "schema": {
+        "output": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "imageData": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "deleteReference",
+      "method": "mutation",
+      "description": "从视觉参考图库删除参考图片",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "delete-reference"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["id"],
+          "properties": {
+            "id": { "type": "string", "description": "参考图片 ID" }
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    {
+      "id": "generateImage",
+      "method": "mutation",
+      "description": "为指定幻灯片生成 AI 图片",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "generate-image"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["slideIndex"],
+          "properties": {
+            "slideIndex": { "type": "number", "description": "幻灯片索引" },
+            "instruction": { "type": "string", "description": "视觉微调指令" },
+            "useCurrentAsRef": { "type": "boolean", "description": "是否以当前图片为参考" }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "generateAllImages",
+      "method": "mutation",
+      "description": "批量生成所有幻灯片图片",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "generate-all-images"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "startIndex": { "type": "number", "description": "起始索引（默认 0）" }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "exportPresentation",
+      "method": "mutation",
+      "description": "导出演讲稿为 PPTX 或 PDF",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "export"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["format"],
+          "properties": {
+            "format": { "type": "string", "enum": ["pptx", "pdf"], "description": "导出格式" }
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "filePath": { "type": "string" }
+          }
+        }
+      }
+    }
+  ],
+  "view": {
+    "component": {
+      "type": "local",
+      "path": "view/dist/index.html"
+    },
+    "fallback": "list",
+    "icon": "presentation"
+  },
+  "types": {
+    "Presentation": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "userInput": { "type": "string" },
+        "styleId": { "type": "string" },
+        "resolution": { "type": "string" },
+        "slides": { "type": "array", "items": { "$ref": "#/types/Slide" } },
+        "sources": { "type": "array", "items": { "$ref": "#/types/Source" } },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      }
+    },
+    "Slide": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "$ref": "#/types/SlideContent" },
+        "imageUrl": { "type": "string" },
+        "imageHistory": { "type": "array", "items": { "$ref": "#/types/ImageVersion" } }
+      }
+    },
+    "SlideContent": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "body": { "type": "array", "items": { "type": "string" } },
+        "imageDescription": { "type": "string" },
+        "layout": { "type": "string" },
+        "speakerNotes": { "type": "string" }
+      }
+    },
+    "ImageVersion": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "url": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "title": { "type": "string" },
+        "body": { "type": "array", "items": { "type": "string" } },
+        "userInstruction": { "type": "string" },
+        "referenceImageUrl": { "type": "string" }
+      }
+    },
+    "Source": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "uri": { "type": "string" }
+      }
+    },
+    "Style": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "previewColor": { "type": "string" },
+        "promptModifier": { "type": "string" }
+      }
+    }
+  },
+  "permissions": {
+    "fileAccess": ["./data/**"],
+    "networkAccess": true,
+    "maxExecutionTime": 180000
+  }
+}

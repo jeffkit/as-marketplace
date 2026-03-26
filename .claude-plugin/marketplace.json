@@ -1,6 +1,6 @@
 {
   "name": "agentstudio-marketplace",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AgentStudio 官方插件市场，包含系统核心 Agent 和 Skills，默认随 AgentStudio 安装。",
   "author": {
     "name": "AgentStudio Team"
@@ -22,6 +22,11 @@
       "name": "as-claw",
       "source": "agents/as-claw.md",
       "description": "具有长期记忆的私人 AI 助手，用 Markdown 文件本地持久化偏好与历史上下文"
+    },
+    {
+      "name": "smart-slides",
+      "source": "agents/smart-slides/smart-slides.md",
+      "description": "AI 驱动的演讲稿生成与编辑 Agent — 智能大纲生成 + 多引擎 AI 图片渲染，支持 Gemini / SeedDream 等"
     }
   ],
   "skills": [
