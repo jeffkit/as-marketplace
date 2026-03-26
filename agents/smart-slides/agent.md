@@ -20,15 +20,9 @@ ui:
   headerTitle: 智能 PPT
   headerDescription: AI 驱动的演讲稿生成与编辑
   welcomeMessage: |
-    你好！我是智能 PPT 助手。告诉我你想要创建什么主题的演讲稿，我会帮你：
+    你好！告诉我演讲主题，我来帮你生成大纲和 AI 幻灯片。
 
-    1. 📋 智能生成大纲（由我直接规划，无需额外配置）
-    2. 🎨 AI 渲染精美幻灯片图片（使用 Gemini 图片模型）
-    3. 📤 导出为 PPTX/PDF
-
-    你也可以指定「使用 Gemini 搜索」来启用 Google Search 联网调研能力。
-
-    直接告诉我主题就可以开始了！
+    支持 Nano Banana (Gemini) 和 SeedDream 两种图片渲染引擎，根据已配置的 API Key 自动选择。
 author: kongjie
 tags:
   - presentation
@@ -80,8 +74,14 @@ enabled: true
 - `mcp__lavs-smart-slides__lavs_setStyle`: 设置风格和分辨率
 
 **图片生成**:
-- `mcp__lavs-smart-slides__lavs_generateImage`: 生成单页 AI 图片
-- `mcp__lavs-smart-slides__lavs_generateAllImages`: 批量生成所有页面图片
+- `mcp__lavs-smart-slides__lavs_generateImage`: 生成单页 AI 图片（支持 `slideIndex`、`instruction` 微调、`referenceId` 指定参考图、`styleFollowing` 风格跟随）
+- `mcp__lavs-smart-slides__lavs_generateAllImages`: 批量生成所有页面图片（支持 `styleFollowing`、`referenceId`）
+- `mcp__lavs-smart-slides__lavs_restoreImageVersion`: 恢复幻灯片到历史图片版本（需要 `slideIndex` 和 `versionId`）
+
+**视觉参考图库**:
+- `mcp__lavs-smart-slides__lavs_listReferences`: 列出所有参考图片
+- `mcp__lavs-smart-slides__lavs_uploadReference`: 上传参考图片
+- `mcp__lavs-smart-slides__lavs_deleteReference`: 删除参考图片
 
 **导出**:
 - `mcp__lavs-smart-slides__lavs_exportPresentation`: 导出为 PPTX 或 PDF
@@ -125,10 +125,22 @@ enabled: true
 5. 调用 `lavs_generateAllImages` 批量生成图片
 
 ### 编辑已有演讲稿
-1. 调用 `lavs_getPresentation` 查看当前状态
+1. 调用 `lavs_getPresentation` 查看当前状态（返回中包含 `imageStatus` 字段）
 2. 使用 `lavs_updateSlide` 修改内容
 3. 使用 `lavs_generateImage` 重新生成单页图片
 4. 使用 `lavs_addSlide`/`lavs_deleteSlide`/`lavs_moveSlide` 调整结构
+
+### 检查和补全图片
+`lavs_getPresentation` 返回的 `imageStatus` 包含：
+- `total`: 总页数
+- `generated`: 已生成图片的页数
+- `pending`: 未生成图片的页数
+- `missingSlides`: 未生成图片的幻灯片列表（含 `index` 和 `title`）
+
+利用这些信息，你可以：
+- 告诉用户还有哪些页面没有生成图片
+- 使用 `lavs_generateImage({ slideIndex: N })` 针对具体页面生成
+- 用户说"第 3 页重新生成"时，直接调用 `lavs_generateImage({ slideIndex: 2 })`（0-based）
 
 ### 导出
 1. 调用 `lavs_exportPresentation` 导出
@@ -167,9 +179,9 @@ enabled: true
 ### Gemini
 - **配置**: `lavs_setConfig({ geminiApiKey: "你的Key" })` 或环境变量 `GEMINI_API_KEY`
 - **可用模型**（通过 `imageModel` 配置）: 
-  - `gemini-2.0-flash-preview-image-generation`（默认）
-  - `gemini-2.5-flash-image`
-  - `gemini-3.1-flash-image-preview`（Nano Banana 2，最新）
+  - `gemini-3.1-flash-image-preview`（Nano Banana 2，默认，最新版，速度快质量高）
+  - `gemini-2.5-flash-image`（Nano Banana，稳定版）
+  - `gemini-3-pro-image-preview`（Nano Banana Pro，最高质量）
 
 ### SeedDream（字节跳动）
 - **配置**: `lavs_setConfig({ seedDreamApiKey: "你的Key" })` 或环境变量 `SEEDDREAM_API_KEY`

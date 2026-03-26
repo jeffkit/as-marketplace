@@ -410,16 +410,19 @@
         "type": "script",
         "command": "node",
         "args": ["scripts/service.cjs", "generate-image"],
-        "input": "stdin"
+        "input": "stdin",
+        "timeout": 600000
       },
       "schema": {
         "input": {
           "type": "object",
           "required": ["slideIndex"],
           "properties": {
-            "slideIndex": { "type": "number", "description": "幻灯片索引" },
+            "slideIndex": { "type": "number", "description": "幻灯片索引（0-based）" },
             "instruction": { "type": "string", "description": "视觉微调指令" },
-            "useCurrentAsRef": { "type": "boolean", "description": "是否以当前图片为参考" }
+            "useCurrentAsRef": { "type": "boolean", "description": "是否以当前图片为参考进行微调" },
+            "referenceId": { "type": "string", "description": "使用指定参考图片的 ID（来自 listReferences）" },
+            "styleFollowing": { "type": "boolean", "description": "是否跟随上一页的风格（默认 true），设为 false 禁用" }
           }
         },
         "output": { "$ref": "#/types/Presentation" }
@@ -433,13 +436,36 @@
         "type": "script",
         "command": "node",
         "args": ["scripts/service.cjs", "generate-all-images"],
-        "input": "stdin"
+        "input": "stdin",
+        "timeout": 600000
       },
       "schema": {
         "input": {
           "type": "object",
           "properties": {
             "startIndex": { "type": "number", "description": "起始索引（默认 0）" }
+          }
+        },
+        "output": { "$ref": "#/types/Presentation" }
+      }
+    },
+    {
+      "id": "restoreImageVersion",
+      "method": "mutation",
+      "description": "恢复幻灯片到指定的历史图片版本",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/service.cjs", "restore-image-version"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["slideIndex", "versionId"],
+          "properties": {
+            "slideIndex": { "type": "number", "description": "幻灯片索引（0-based）" },
+            "versionId": { "type": "string", "description": "历史版本 ID（来自 imageHistory 数组中的 id）" }
           }
         },
         "output": { "$ref": "#/types/Presentation" }

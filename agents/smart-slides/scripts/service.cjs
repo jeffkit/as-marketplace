@@ -210,7 +210,7 @@ async function callGeminiText(model, systemInstruction, parts, tools) {
 
 async function callGeminiImage(title, body, styleModifier, resolution, referenceImageBase64, userInstruction) {
   const config = getConfig();
-  const model = config.imageModel || process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash-preview-image-generation';
+  const model = config.imageModel || process.env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-image-preview';
   const apiKey = getApiKey();
   if (!apiKey) throw new Error('请先设置 Gemini API Key');
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -247,11 +247,18 @@ async function callGeminiImage(title, body, styleModifier, resolution, reference
     }
   }
 
+  const pres = loadPresentation();
+  const resolutionMap = { '512': '512', '1K': '1K', '2K': '2K', '4K': '4K' };
+  const imageSize = resolutionMap[(pres && pres.resolution) || ''] || '1K';
+
   const reqBody = {
     contents: [{ parts }],
     generationConfig: {
-      responseModalities: ['IMAGE', 'TEXT'],
-      imageSizeOptions: { aspectRatio: '16:9' }
+      responseModalities: ['TEXT', 'IMAGE'],
+      imageConfig: {
+        aspectRatio: '16:9',
+        imageSize: imageSize
+      }
     }
   };
 
@@ -504,7 +511,7 @@ async function handleRefineOutline(input) {
 }
 
 async function handleGenerateImage(input) {
-  const { slideIndex, instruction, useCurrentAsRef } = input;
+  const { slideIndex, instruction, useCurrentAsRef, referenceId, styleFollowing } = input;
 
   const pres = loadPresentation();
   if (!pres) throw new Error('No presentation exists');
@@ -513,8 +520,20 @@ async function handleGenerateImage(input) {
   const slide = pres.slides[slideIndex];
   const style = STYLES.find(s => s.id === pres.styleId) || STYLES[0];
 
-  let refImage = useCurrentAsRef ? slide.imageUrl : null;
-  if (!useCurrentAsRef && slideIndex > 0 && pres.slides[slideIndex - 1]?.imageUrl) {
+  let refImage = null;
+  if (useCurrentAsRef) {
+    refImage = slide.imageUrl;
+  } else if (referenceId) {
+    const meta = loadReferencesMeta();
+    const entry = meta.find(e => e.id === referenceId);
+    if (entry) {
+      try {
+        const buf = fs.readFileSync(path.join(referencesDir, entry.fileName));
+        const ext = entry.fileName.endsWith('.png') ? 'png' : 'jpeg';
+        refImage = `data:image/${ext};base64,${buf.toString('base64')}`;
+      } catch {}
+    }
+  } else if (styleFollowing !== false && slideIndex > 0 && pres.slides[slideIndex - 1]?.imageUrl) {
     refImage = pres.slides[slideIndex - 1].imageUrl;
   }
 
@@ -636,6 +655,36 @@ async function handleGenerateAllImages(input) {
   return pres;
 }
 
+function handleRestoreImageVersion(input) {
+  const { slideIndex, versionId } = input;
+  const pres = loadPresentation();
+  if (!pres) throw new Error('No presentation exists');
+  if (slideIndex < 0 || slideIndex >= pres.slides.length) throw new Error('Invalid slide index');
+
+  const slide = pres.slides[slideIndex];
+  const history = slide.imageHistory || [];
+  const version = history.find(v => v.id === versionId);
+  if (!version) throw new Error(`Version ${versionId} not found in slide ${slideIndex} history`);
+
+  if (slide.imageUrl && slide.imageUrl !== version.url) {
+    const lastInHistory = history.length > 0 ? history[history.length - 1].url : null;
+    if (lastInHistory !== slide.imageUrl) {
+      history.push({
+        id: randomUUID(),
+        url: slide.imageUrl,
+        timestamp: Date.now(),
+        title: slide.content.title,
+        body: [...slide.content.body],
+        userInstruction: 'Before Restore (Auto-saved)'
+      });
+      slide.imageHistory = history;
+    }
+  }
+
+  slide.imageUrl = version.url;
+  return savePresentation(pres);
+}
+
 const command = process.argv[2];
 
 async function main() {
@@ -644,7 +693,19 @@ async function main() {
     switch (command) {
       case 'get': {
         const pres = loadPresentation();
-        result = pres || createEmptyPresentation('', 'minimal-modern');
+        const data = pres || createEmptyPresentation('', 'minimal-modern');
+        const total = data.slides.length;
+        const generated = data.slides.filter(s => s.imageUrl).length;
+        const missing = data.slides
+          .map((s, i) => ({ index: i, title: s.content.title }))
+          .filter(s => !data.slides[s.index].imageUrl);
+        data.imageStatus = {
+          total,
+          generated,
+          pending: total - generated,
+          missingSlides: missing
+        };
+        result = data;
         break;
       }
       case 'list-styles': {
@@ -657,7 +718,7 @@ async function main() {
         result = {
           hasApiKey: !!getApiKey(),
           textModel: config.textModel || 'gemini-2.5-flash',
-          imageModel: config.imageModel || 'gemini-2.0-flash-preview-image-generation',
+          imageModel: config.imageModel || 'gemini-3.1-flash-image-preview',
           activeProvider,
           hasSeedDreamKey: !!(config.seedDreamApiKey || process.env.SEEDDREAM_API_KEY),
           seedDreamBaseUrl: config.seedDreamBaseUrl || 'https://api.crazyrouter.com',
@@ -679,7 +740,7 @@ async function main() {
           success: true,
           hasApiKey: !!config.geminiApiKey,
           textModel: config.textModel || 'gemini-2.5-flash',
-          imageModel: config.imageModel || 'gemini-2.0-flash-preview-image-generation'
+          imageModel: config.imageModel || 'gemini-3.1-flash-image-preview'
         };
         break;
       }
@@ -782,6 +843,10 @@ async function main() {
       }
       case 'generate-all-images': {
         result = await handleGenerateAllImages(readStdin());
+        break;
+      }
+      case 'restore-image-version': {
+        result = handleRestoreImageVersion(readStdin());
         break;
       }
       case 'export': {
