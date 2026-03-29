@@ -15,7 +15,7 @@
   "agents": [
     {
       "name": "meta-agent",
-      "source": "agents/meta-agent/meta-agent.md",
+      "source": "agents/meta-agent/agent.md",
       "description": "系统配置助手 & 业务路由器"
     },
     {
@@ -25,7 +25,7 @@
     },
     {
       "name": "smart-slides",
-      "source": "agents/smart-slides/smart-slides.md",
+      "source": "agents/smart-slides/agent.md",
       "description": "AI 驱动的演讲稿生成与编辑 Agent — 智能大纲生成 + 多引擎 AI 图片渲染，支持 Gemini / SeedDream 等"
     }
   ],
