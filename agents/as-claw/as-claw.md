@@ -15,6 +15,24 @@ ui:
     我会持久记住你告诉我的一切——偏好、项目、决策和习惯。无论何时回来，我都还记得你。
 
     随时和我聊天，说说你在忙什么 🎯
+allowedTools:
+  - { name: Write, enabled: true }
+  - { name: Read, enabled: true }
+  - { name: Edit, enabled: true }
+  - { name: Glob, enabled: true }
+  - { name: Bash, enabled: true }
+  - { name: Task, enabled: true }
+  - { name: WebFetch, enabled: true }
+  - { name: WebSearch, enabled: true }
+  - { name: TodoWrite, enabled: true }
+  - { name: NotebookEdit, enabled: true }
+  - { name: Grep, enabled: true }
+  - { name: KillShell, enabled: true }
+  - { name: BashOutput, enabled: true }
+  - { name: AgentOutput, enabled: true }
+  - { name: SlashCommand, enabled: true }
+  - { name: ExitPlanMode, enabled: true }
+  - { name: Skill, enabled: true }
 author: AgentStudio System
 tags:
   - memory

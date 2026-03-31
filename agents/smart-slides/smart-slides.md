@@ -6,14 +6,23 @@ version: "1.1.0"
 maxTurns: 50
 permissionMode: acceptEdits
 allowedTools:
-  - { name: Read, enabled: true }
   - { name: Write, enabled: true }
+  - { name: Read, enabled: true }
   - { name: Edit, enabled: true }
-  - { name: Bash, enabled: true }
   - { name: Glob, enabled: true }
-  - { name: Grep, enabled: true }
-  - { name: WebSearch, enabled: true }
+  - { name: Bash, enabled: true }
+  - { name: Task, enabled: true }
   - { name: WebFetch, enabled: true }
+  - { name: WebSearch, enabled: true }
+  - { name: TodoWrite, enabled: true }
+  - { name: NotebookEdit, enabled: true }
+  - { name: Grep, enabled: true }
+  - { name: KillShell, enabled: true }
+  - { name: BashOutput, enabled: true }
+  - { name: AgentOutput, enabled: true }
+  - { name: SlashCommand, enabled: true }
+  - { name: ExitPlanMode, enabled: true }
+  - { name: Skill, enabled: true }
 ui:
   icon: "🎨"
   primaryColor: "#6366f1"
