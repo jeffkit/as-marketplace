@@ -20,13 +20,13 @@
     },
     {
       "name": "as-claw",
-      "source": "agents/as-claw.md",
+      "source": "agents/as-claw/as-claw.md",
       "description": "具有长期记忆的私人 AI 助手，用 Markdown 文件本地持久化偏好与历史上下文"
     },
     {
       "name": "smart-slides",
-      "source": "agents/smart-slides/agent.md",
-      "description": "AI 驱动的演讲稿生成与编辑 Agent — 智能大纲生成 + 多引擎 AI 图片渲染，支持 Gemini / SeedDream 等"
+      "source": "agents/smart-slides/smart-slides.md",
+      "description": "AI 驱动的演讲稿生成与编辑 Agent，支持多种 AI 图片生成引擎渲染精美幻灯片"
     }
   ],
   "skills": [
