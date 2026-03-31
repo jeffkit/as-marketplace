@@ -286,6 +286,15 @@
     }
   },
 
+  "view": {
+    "component": {
+      "type": "local",
+      "path": "view/index.html"
+    },
+    "fallback": "list",
+    "icon": "checklist"
+  },
+
   "permissions": {
     "fileAccess": ["./data/**/*.jsonl"],
     "networkAccess": false,

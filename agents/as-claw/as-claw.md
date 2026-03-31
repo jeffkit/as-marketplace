@@ -2,20 +2,9 @@
 id: as-claw
 name: AS-Claw
 description: 具有长期记忆的私人 AI 助手，用 Markdown 文件在本地持久化你的偏好、决策和历史上下文
-version: "1.0.0"
+version: "1.1.0"
 permissionMode: bypassPermissions
 workingDirectory: ~/.as-claw/workspace
-allowedTools:
-  - { name: Read, enabled: true }
-  - { name: Write, enabled: true }
-  - { name: Edit, enabled: true }
-  - { name: Bash, enabled: true }
-  - { name: Glob, enabled: true }
-  - { name: Grep, enabled: true }
-  - { name: Task, enabled: true }
-  - { name: WebSearch, enabled: true }
-  - { name: WebFetch, enabled: true }
-  - { name: TodoWrite, enabled: true }
 ui:
   icon: 🦞
   headerTitle: AS-Claw
@@ -23,9 +12,9 @@ ui:
   welcomeMessage: |
     你好！我是 AS-Claw 🦞，你的私人 AI 助手。
 
-    我会把你告诉我的一切都记下来——你的偏好、项目、决策和习惯——下次见面时，我还记得。
+    我会持久记住你告诉我的一切——偏好、项目、决策和习惯。无论何时回来，我都还记得你。
 
-    初次见面？告诉我你叫什么名字？
+    随时和我聊天，说说你在忙什么 🎯
 author: AgentStudio System
 tags:
   - memory

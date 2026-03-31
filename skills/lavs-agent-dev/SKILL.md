@@ -29,7 +29,7 @@ additionalFiles:
 
 ```
 agents/<agent-name>/
-├── agent.json          # Agent 配置（allowedTools 对象格式）
+├── agent.md            # Agent 配置（YAML frontmatter + Markdown system prompt）
 ├── lavs.json           # LAVS 清单（endpoints + view + types + permissions）
 ├── scripts/
 │   └── service.cjs     # 统一服务脚本（命令分发模式）
@@ -54,10 +54,29 @@ agents/<agent-name>/
 >
 > View 作为 iframe 运行，受 CSP `connect-src 'self'` 约束。**绝对不要**在 View 中直接 `fetch('http://localhost:4936/...')`，否则会被拦截报 "Failed to fetch"。唯一正确方式是 postMessage bridge。
 
-## agent.json 要点
+## agent.md 要点
 
-- `allowedTools` 是对象数组格式：`[{ "name": "Read", "enabled": true }, ...]`
-- 不是 `"tools": ["lavs"]`（这是错误格式）
+Agent 使用 **Markdown 格式**定义：YAML frontmatter 放配置字段，Markdown body 写 system prompt。
+
+```markdown
+---
+id: <agent-name>
+name: <显示名称>
+description: <功能描述>
+permissionMode: acceptEdits
+allowedTools:
+  - { name: Read, enabled: true }
+  - { name: Write, enabled: true }
+ui:
+  icon: 📋
+  headerTitle: <显示名称>
+---
+你是 <agent-name>，一个专注于管理 <领域> 的智能助手...
+```
+
+- `allowedTools` 是对象数组格式：`[{ name: Read, enabled: true }, ...]`
+- `ui.welcomeMessage` 用 YAML `|` 多行语法
+- system prompt 就是 Markdown body（`---` 分隔符之后的内容），不需要放在 frontmatter 里
 - 完整模板见 `reference/templates.md`
 
 ## lavs.json 要点

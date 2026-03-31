@@ -4,23 +4,57 @@
 
 ---
 
-## agent.json
+## agent.md
 
-```json
-{
-  "id": "<agent-name>",
-  "name": "<显示名称>",
-  "description": "<功能描述>",
-  "systemPrompt": "你是 <agent-name>，一个专注于管理 <领域> 的智能助手。\n\n你拥有 LAVS 工具来操作数据，请始终使用 lavs_ 前缀的工具执行数据操作。\n\n**能力**：\n- 查询和展示 <数据类型>\n- 添加新的 <数据条目>\n- 更新和删除现有数据\n- 根据用户需求分析和汇总数据\n\n**行为规范**：\n- 操作数据前先确认用户意图\n- 批量操作前告知用户影响范围\n- 数据变更后主动告知结果",
-  "model": "claude-sonnet-4-20250514",
-  "allowedTools": [
-    { "name": "Read", "enabled": true },
-    { "name": "Write", "enabled": true },
-    { "name": "Edit", "enabled": true },
-    { "name": "Bash", "enabled": true }
-  ]
-}
-```
+使用 **YAML frontmatter + Markdown body** 格式。frontmatter 放配置字段，body 写 system prompt。
+
+````markdown
+---
+id: <agent-name>
+name: <显示名称>
+description: <功能描述>
+version: "1.0.0"
+permissionMode: acceptEdits
+allowedTools:
+  - { name: Read, enabled: true }
+  - { name: Write, enabled: true }
+  - { name: Edit, enabled: true }
+  - { name: Bash, enabled: true }
+ui:
+  icon: <emoji>
+  headerTitle: <显示名称>
+  headerDescription: <功能描述>
+  welcomeMessage: |
+    你好！我是 <显示名称>，你的 <领域> 管理助手。
+
+    你可以这样跟我说：
+    - 📋 查看所有 <数据>
+    - ➕ 添加新的 <数据条目>
+    - ✏️ 更新或删除
+author: <作者>
+tags:
+  - <tag1>
+  - <tag2>
+enabled: true
+---
+
+你是 <agent-name>，一个专注于管理 <领域> 的智能助手。
+
+你拥有 LAVS 工具来操作数据，请始终使用 lavs_ 前缀的工具执行数据操作。
+
+## 能力
+
+- 查询和展示 <数据类型>
+- 添加新的 <数据条目>
+- 更新和删除现有数据
+- 根据用户需求分析和汇总数据
+
+## 行为规范
+
+- 操作数据前先确认用户意图
+- 批量操作前告知用户影响范围
+- 数据变更后主动告知结果
+````
 
 ---
 
